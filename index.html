@@ -1,530 +1,757 @@
 <!DOCTYPE html>
-<html lang="vi">
-<head>
+<html lang="vi"><head><script>
+                // Injected Game Data
+                window.APP_MODE = 'student';
+                window.INJECTED_WORDS = [{"word":"YÊU THƯƠNG"},{"word":"GẮN KẾT"},{"word":"CHIA SẺ"},{"word":"QUAN TÂM"},{"word":"HIẾU THẢO"}];
+            </script>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Vượt Thử Thách</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vua Tiếng Việt - Trò Chơi Ghép Chữ</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Tone.js for Sound Effects -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    
     <style>
+        /* Custom Styles & Animations */
         body {
-            background-color: #1f2937; /* Tailwind gray-800 */
-            touch-action: none; /* Ngăn chặn cuộn trang khi chạm trên điện thoại */
-            overflow: hidden;
             font-family: 'Inter', sans-serif;
+            background-image: url("HÌNH.jpg") !important;
+            background-size: cover !important;
+            background-position: center !important;
+            background-repeat: no-repeat !important;
+            background-attachment: fixed !important;
+            background-color: #ffd1dc !important; /* Màu nền hồng pastel dự phòng */
+            color: #1f2937; /* Dark gray text */
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        h1, h2, h3, .font-game {
+            font-family: 'Baloo 2', cursive;
         }
 
-        .pixel-text {
-            font-family: 'Press Start 2P', system-ui, sans-serif;
+        .title-3d {
+            color: #ea580c; /* Dark Orange */
+            text-shadow: 
+                1px 1px 0 #c2410c, 
+                2px 2px 0 #c2410c, 
+                3px 3px 0 #9a3412, 
+                4px 4px 0 #9a3412, 
+                5px 5px 0 #7c2d12, 
+                6px 6px 12px rgba(0,0,0,0.3);
         }
 
-        #game-wrapper {
-            position: relative;
-            width: 100%;
-            max-width: 800px;
-            aspect-ratio: 2.5 / 1;
-            margin: 0 auto;
-            background-color: #e0f2fe; /* Bầu trời xanh nhạt */
-            border-radius: 16px;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
-            overflow: hidden;
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+            border-radius: 1.5rem;
         }
 
-        canvas {
-            display: block;
-            width: 100%;
-            height: 100%;
-            border-radius: 16px;
-        }
-
-        /* Lớp phủ màn hình kết thúc / bắt đầu */
-        #ui-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+        /* Tile Styles */
+        .letter-tile {
+            width: 3rem;
+            height: 3rem;
             display: flex;
-            flex-direction: column;
-            justify-content: center;
             align-items: center;
-            background-color: rgba(255, 255, 255, 0.85);
-            z-index: 10;
-            transition: opacity 0.3s ease;
-        }
-
-        .hidden {
-            display: none !important;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #78350f; /* Dark brown text */
+            background: linear-gradient(180deg, #fef08a 0%, #eab308 100%);
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 0 #a16207, 0 5px 10px rgba(0,0,0,0.2);
+            cursor: pointer;
+            transition: all 0.1s ease;
+            user-select: none;
+            font-family: 'Baloo 2', cursive;
+            text-transform: uppercase;
         }
         
-        .btn {
-            transition: transform 0.1s ease, box-shadow 0.1s ease;
-        }
-        
-        .btn:active {
-            transform: scale(0.95);
+        @media (min-width: 640px) {
+            .letter-tile {
+                width: 3.5rem;
+                height: 3.5rem;
+                font-size: 1.75rem;
+            }
         }
 
-        /* Hoạt ảnh đám mây trôi */
-        .clouds {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 200%;
-            height: 100%;
-            background-image: radial-gradient(circle, #ffffff 10%, transparent 20%), radial-gradient(circle, #ffffff 10%, transparent 20%);
-            background-size: 150px 150px, 100px 100px;
-            background-position: 0 0, 50px 50px;
-            opacity: 0.8;
-            z-index: 1;
+        .letter-tile:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 #a16207, 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .letter-tile.disabled {
+            opacity: 0;
             pointer-events: none;
-            animation: moveClouds 20s linear infinite;
+            transform: scale(0.5);
         }
 
-        @keyframes moveClouds {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
+        /* Slot Styles */
+        .letter-slot {
+            width: 3rem;
+            height: 3rem;
+            border: 2px dashed rgba(255, 255, 255, 0.4);
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.2);
+            transition: all 0.2s;
         }
-    </style>
-</head>
-<body class="h-screen w-screen flex flex-col items-center justify-center p-4">
-
-    <!-- Tiêu đề và Thông tin bên ngoài -->
-    <div class="mb-6 text-center text-white">
-        <h1 class="text-3xl font-bold mb-2 flex items-center justify-center gap-3">
-            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" viewBox="0 0 256 256"><path d="M224,112a8,8,0,0,1-8,8H200v16a8,8,0,0,1-16,0V120H152v64.63a32.06,32.06,0,0,1-17.55,28.53L120,220.35V240a8,8,0,0,1-16,0V224H88v16a8,8,0,0,1-16,0V208H64a8,8,0,0,1-8-8V152a56,56,0,0,1,56-56h24V88H120a8,8,0,0,1,0-16h16V56a8,8,0,0,1,8-8h48a40,40,0,0,1,40,40v24ZM112,112A40,40,0,0,0,72,152v40h32v-8a8,8,0,0,1,16,0v18l9.56-4.79A16,16,0,0,0,136,184.63V112Z"></path></svg>
-            VƯỢT THỬ THÁCH
-        </h1>
-        <p class="text-gray-400">Nhấn <kbd class="bg-gray-700 px-2 py-1 rounded">Phím Cách</kbd> hoặc <kbd class="bg-gray-700 px-2 py-1 rounded">Chạm</kbd> để nhảy!</p>
-    </div>
-
-    <!-- Vùng trò chơi chính -->
-    <div id="game-wrapper">
-        <div class="clouds"></div>
         
-        <!-- Bảng điểm góc trên phải -->
-        <div class="absolute top-4 right-6 z-10 flex gap-6 pixel-text text-[10px] text-gray-700 md:text-xs">
-            <div id="high-score-display">HI: 00000</div>
-            <div id="score-display">00000</div>
+        @media (min-width: 640px) {
+            .letter-slot {
+                width: 3.5rem;
+                height: 3.5rem;
+            }
+        }
+
+        .letter-slot.filled {
+            border-style: solid;
+            border-color: transparent;
+            background: transparent;
+        }
+
+        /* Space between words indicator */
+        .word-space {
+            width: 1rem;
+        }
+
+        /* Animations */
+        @keyframes popIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            70% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .animate-pop {
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+        .animate-shake {
+            animation: shake 0.4s ease-in-out;
+            border-color: #ef4444 !important; /* Red flash */
+        }
+        
+        @keyframes successPulse {
+            0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(34, 197, 94, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+        }
+        .animate-success {
+            animation: successPulse 1s;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.5); }
+    </style>
+<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.fixed{position:fixed}.absolute{position:absolute}.inset-0{inset:0px}.left-1\/2{left:50%}.z-50{z-index:50}.mb-10{margin-bottom:2.5rem}.mb-12{margin-bottom:3rem}.mb-3{margin-bottom:0.75rem}.mb-4{margin-bottom:1rem}.mb-6{margin-bottom:1.5rem}.mb-8{margin-bottom:2rem}.ml-2{margin-left:0.5rem}.ml-4{margin-left:1rem}.mr-1{margin-right:0.25rem}.mr-2{margin-right:0.5rem}.mr-3{margin-right:0.75rem}.mr-4{margin-right:1rem}.mt-1{margin-top:0.25rem}.mt-6{margin-top:1.5rem}.mt-8{margin-top:2rem}.flex{display:flex}.hidden{display:none}.h-10{height:2.5rem}.min-h-\[250px\]{min-height:250px}.min-h-screen{min-height:100vh}.w-10{width:2.5rem}.w-full{width:100%}.max-w-3xl{max-width:48rem}.max-w-4xl{max-width:56rem}.max-w-sm{max-width:24rem}.flex-1{flex:1 1 0%}.flex-grow{flex-grow:1}.-translate-x-1\/2{--tw-translate-x:-50%;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.scale-95{--tw-scale-x:.95;--tw-scale-y:.95;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.transform{transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.resize-none{resize:none}.list-inside{list-style-position:inside}.list-disc{list-style-type:disc}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}.items-center{align-items:center}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-2{gap:0.5rem}.gap-4{gap:1rem}.gap-y-4{row-gap:1rem}.space-x-2 > :not([hidden]) ~ :not([hidden]){--tw-space-x-reverse:0;margin-right:calc(0.5rem * var(--tw-space-x-reverse));margin-left:calc(0.5rem * calc(1 - var(--tw-space-x-reverse)))}.space-x-3 > :not([hidden]) ~ :not([hidden]){--tw-space-x-reverse:0;margin-right:calc(0.75rem * var(--tw-space-x-reverse));margin-left:calc(0.75rem * calc(1 - var(--tw-space-x-reverse)))}.rounded-3xl{border-radius:1.5rem}.rounded-full{border-radius:9999px}.rounded-xl{border-radius:0.75rem}.border{border-width:1px}.border-4{border-width:4px}.border-blue-200{--tw-border-opacity:1;border-color:rgb(191 219 254 / var(--tw-border-opacity, 1))}.border-gray-300{--tw-border-opacity:1;border-color:rgb(209 213 219 / var(--tw-border-opacity, 1))}.border-gray-400{--tw-border-opacity:1;border-color:rgb(156 163 175 / var(--tw-border-opacity, 1))}.border-white{--tw-border-opacity:1;border-color:rgb(255 255 255 / var(--tw-border-opacity, 1))}.border-opacity-50{--tw-border-opacity:0.5}.bg-black{--tw-bg-opacity:1;background-color:rgb(0 0 0 / var(--tw-bg-opacity, 1))}.bg-blue-50{--tw-bg-opacity:1;background-color:rgb(239 246 255 / var(--tw-bg-opacity, 1))}.bg-gray-800{--tw-bg-opacity:1;background-color:rgb(31 41 55 / var(--tw-bg-opacity, 1))}.bg-red-500{--tw-bg-opacity:1;background-color:rgb(239 68 68 / var(--tw-bg-opacity, 1))}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.bg-yellow-400{--tw-bg-opacity:1;background-color:rgb(250 204 21 / var(--tw-bg-opacity, 1))}.bg-opacity-10{--tw-bg-opacity:0.1}.bg-opacity-80{--tw-bg-opacity:0.8}.bg-gradient-to-r{background-image:linear-gradient(to right, var(--tw-gradient-stops))}.from-blue-500{--tw-gradient-from:#3b82f6 var(--tw-gradient-from-position);--tw-gradient-to:rgb(59 130 246 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.from-green-500{--tw-gradient-from:#22c55e var(--tw-gradient-from-position);--tw-gradient-to:rgb(34 197 94 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.from-orange-500{--tw-gradient-from:#f97316 var(--tw-gradient-from-position);--tw-gradient-to:rgb(249 115 22 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.to-blue-600{--tw-gradient-to:#2563eb var(--tw-gradient-to-position)}.to-green-600{--tw-gradient-to:#16a34a var(--tw-gradient-to-position)}.to-purple-600{--tw-gradient-to:#9333ea var(--tw-gradient-to-position)}.to-red-600{--tw-gradient-to:#dc2626 var(--tw-gradient-to-position)}.p-2{padding:0.5rem}.p-4{padding:1rem}.p-6{padding:1.5rem}.px-10{padding-left:2.5rem;padding-right:2.5rem}.px-2{padding-left:0.5rem;padding-right:0.5rem}.px-4{padding-left:1rem;padding-right:1rem}.px-6{padding-left:1.5rem;padding-right:1.5rem}.px-8{padding-left:2rem;padding-right:2rem}.py-2{padding-top:0.5rem;padding-bottom:0.5rem}.py-3{padding-top:0.75rem;padding-bottom:0.75rem}.py-4{padding-top:1rem;padding-bottom:1rem}.text-center{text-align:center}.text-2xl{font-size:1.5rem;line-height:2rem}.text-3xl{font-size:1.875rem;line-height:2.25rem}.text-5xl{font-size:3rem;line-height:1}.text-6xl{font-size:3.75rem;line-height:1}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.font-bold{font-weight:700}.font-medium{font-weight:500}.font-semibold{font-weight:600}.leading-tight{line-height:1.25}.tracking-wide{letter-spacing:0.025em}.text-blue-500{--tw-text-opacity:1;color:rgb(59 130 246 / var(--tw-text-opacity, 1))}.text-blue-700{--tw-text-opacity:1;color:rgb(29 78 216 / var(--tw-text-opacity, 1))}.text-blue-800{--tw-text-opacity:1;color:rgb(30 64 175 / var(--tw-text-opacity, 1))}.text-blue-900{--tw-text-opacity:1;color:rgb(30 58 138 / var(--tw-text-opacity, 1))}.text-gray-400{--tw-text-opacity:1;color:rgb(156 163 175 / var(--tw-text-opacity, 1))}.text-gray-600{--tw-text-opacity:1;color:rgb(75 85 99 / var(--tw-text-opacity, 1))}.text-gray-700{--tw-text-opacity:1;color:rgb(55 65 81 / var(--tw-text-opacity, 1))}.text-gray-800{--tw-text-opacity:1;color:rgb(31 41 55 / var(--tw-text-opacity, 1))}.text-gray-900{--tw-text-opacity:1;color:rgb(17 24 39 / var(--tw-text-opacity, 1))}.text-green-600{--tw-text-opacity:1;color:rgb(22 163 74 / var(--tw-text-opacity, 1))}.text-red-500{--tw-text-opacity:1;color:rgb(239 68 68 / var(--tw-text-opacity, 1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.text-yellow-500{--tw-text-opacity:1;color:rgb(234 179 8 / var(--tw-text-opacity, 1))}.text-yellow-900{--tw-text-opacity:1;color:rgb(113 63 18 / var(--tw-text-opacity, 1))}.antialiased{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}.placeholder-gray-400::placeholder{--tw-placeholder-opacity:1;color:rgb(156 163 175 / var(--tw-placeholder-opacity, 1))}.shadow-2xl{--tw-shadow:0 25px 50px -12px rgb(0 0 0 / 0.25);--tw-shadow-colored:0 25px 50px -12px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-inner{--tw-shadow:inset 0 2px 4px 0 rgb(0 0 0 / 0.05);--tw-shadow-colored:inset 0 2px 4px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-lg{--tw-shadow:0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.backdrop-blur-sm{--tw-backdrop-blur:blur(4px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-colors{transition-property:color, background-color, border-color, fill, stroke, -webkit-text-decoration-color;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, -webkit-text-decoration-color;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-opacity{transition-property:opacity;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-transform{transition-property:transform;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.duration-500{transition-duration:500ms}.hover\:-translate-y-1:hover{--tw-translate-y:-0.25rem;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.hover\:scale-105:hover{--tw-scale-x:1.05;--tw-scale-y:1.05;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.hover\:scale-110:hover{--tw-scale-x:1.1;--tw-scale-y:1.1;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.hover\:bg-red-600:hover{--tw-bg-opacity:1;background-color:rgb(220 38 38 / var(--tw-bg-opacity, 1))}.hover\:bg-opacity-20:hover{--tw-bg-opacity:0.2}.hover\:from-blue-600:hover{--tw-gradient-from:#2563eb var(--tw-gradient-from-position);--tw-gradient-to:rgb(37 99 235 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.hover\:from-green-600:hover{--tw-gradient-from:#16a34a var(--tw-gradient-from-position);--tw-gradient-to:rgb(22 163 74 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.hover\:from-orange-600:hover{--tw-gradient-from:#ea580c var(--tw-gradient-from-position);--tw-gradient-to:rgb(234 88 12 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.hover\:to-blue-700:hover{--tw-gradient-to:#1d4ed8 var(--tw-gradient-to-position)}.hover\:to-green-700:hover{--tw-gradient-to:#15803d var(--tw-gradient-to-position)}.hover\:to-purple-700:hover{--tw-gradient-to:#7e22ce var(--tw-gradient-to-position)}.hover\:to-red-700:hover{--tw-gradient-to:#b91c1c var(--tw-gradient-to-position)}.hover\:text-red-500:hover{--tw-text-opacity:1;color:rgb(239 68 68 / var(--tw-text-opacity, 1))}.focus\:border-transparent:focus{border-color:transparent}.focus\:outline-none:focus{outline:2px solid transparent;outline-offset:2px}.focus\:ring-2:focus{--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000)}.focus\:ring-orange-400:focus{--tw-ring-opacity:1;--tw-ring-color:rgb(251 146 60 / var(--tw-ring-opacity, 1))}@media (min-width: 640px){.sm\:inline{display:inline}.sm\:flex-row{flex-direction:row}.sm\:gap-3{gap:0.75rem}.sm\:p-4{padding:1rem}.sm\:p-6{padding:1.5rem}.sm\:p-8{padding:2rem}.sm\:px-14{padding-left:3.5rem;padding-right:3.5rem}.sm\:py-5{padding-top:1.25rem;padding-bottom:1.25rem}.sm\:text-2xl{font-size:1.5rem;line-height:2rem}.sm\:text-3xl{font-size:1.875rem;line-height:2.25rem}.sm\:text-4xl{font-size:2.25rem;line-height:2.5rem}.sm\:text-8xl{font-size:6rem;line-height:1}}@media (min-width: 768px){.md\:p-8{padding:2rem}.md\:text-9xl{font-size:8rem;line-height:1}}</style></head>
+<body class="antialiased flex flex-col items-center">
+
+    <!-- Configuration block to detect environment -->
+    <script>
+        // If this app is exported, APP_MODE will be injected as 'student'
+        window.APP_MODE = window.APP_MODE || 'creator';
+        window.INJECTED_WORDS = window.INJECTED_WORDS || [];
+    </script>
+
+    <!-- UI: CREATOR / TEACHER (Hidden in exported mode) -->
+    
+
+    <!-- UI: GAME (Hidden initially in creator mode) -->
+    <div id="game-ui" class="hidden w-full max-w-3xl p-2 sm:p-4 flex-grow flex flex-col items-center justify-center min-h-screen">
+        
+        <!-- Game Header -->
+        <div class="w-full flex justify-between items-center mb-6 px-4 glass-panel rounded-full py-3">
+            <div class="flex items-center space-x-2">
+                <div class="bg-yellow-400 text-yellow-900 rounded-full w-10 h-10 flex items-center justify-center font-bold text-xl shadow-inner font-game" id="level-display">
+                    1
+                </div>
+                <span class="font-semibold text-gray-700 hidden sm:inline">/ <span id="total-levels">10</span></span>
+            </div>
+            
+            <h1 class="text-2xl sm:text-3xl font-bold font-game title-3d absolute left-1/2 transform -translate-x-1/2">
+                Vua Tiếng Việt
+            </h1>
+
+            <div class="flex items-center space-x-3 text-lg font-bold">
+                <div class="flex items-center text-green-600">
+                    <i class="fa-solid fa-star mr-1"></i> <span id="score-display">0</span>
+                </div>
+                <div class="flex items-center text-red-500 ml-4">
+                    <i class="fa-regular fa-clock mr-1"></i> <span id="timer-display">30</span>s
+                </div>
+            </div>
         </div>
 
-        <!-- Màn hình giao diện báo bắt đầu / kết thúc -->
-        <div id="ui-overlay">
-            <h2 id="ui-title" class="pixel-text text-xl md:text-3xl text-gray-800 mb-6 text-center leading-relaxed">SẴN SÀNG?</h2>
-            <button id="action-btn" class="btn pixel-text bg-blue-600 hover:bg-blue-700 text-white text-xs md:text-sm px-6 py-4 rounded-lg shadow-lg border-b-4 border-blue-900 focus:outline-none">
-                BẮT ĐẦU
+        <!-- Answer Slots Area -->
+        <div class="w-full flex flex-wrap justify-center items-center mb-10 gap-y-4 px-2 mt-8" id="slots-container">
+            <!-- Slots will be generated here -->
+        </div>
+
+        <!-- Available Letters Area -->
+        <div class="w-full flex flex-wrap justify-center items-center gap-2 sm:gap-3 mb-10 glass-panel p-6 rounded-3xl" id="letters-container">
+            <!-- Letter tiles will be generated here -->
+        </div>
+
+        <!-- Controls -->
+        <div class="flex gap-4">
+            <button onclick="skipQuestion()" class="bg-gray-800 bg-opacity-10 hover:bg-opacity-20 text-gray-800 font-bold py-2 px-6 rounded-full transition-all border border-gray-400">
+                <i class="fa-solid fa-forward mr-2"></i> Bỏ qua
+            </button>
+            <button id="btn-exit-test" onclick="exitTestMode()" class="hidden bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-6 rounded-full transition-all shadow-lg">
+                <i class="fa-solid fa-xmark mr-2"></i> Thoát
             </button>
         </div>
-
-        <canvas id="gameCanvas"></canvas>
     </div>
 
-    <!-- Javascript logic -->
+    <!-- UI: STUDENT WELCOME (Hidden initially, shown only in exported student mode) -->
+    <div id="student-welcome-view" class="hidden w-full flex-grow flex-col items-center justify-center min-h-screen">
+        <h1 class="text-6xl sm:text-8xl md:text-9xl font-bold font-game title-3d mb-10 leading-tight text-center px-4 tracking-wide">
+            VUA TIẾNG VIỆT
+        </h1>
+        <button id="btn-play-game" class="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-bold py-4 px-10 sm:py-5 sm:px-14 rounded-full shadow-2xl transition-transform transform hover:scale-110 flex items-center justify-center text-2xl sm:text-4xl font-game border-4 border-white">
+            <i class="fa-solid fa-play mr-4"></i> PLAY GAME
+        </button>
+    </div>
+
+    <!-- Custom Modal Message Box -->
+    <div id="custom-modal" class="hidden fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4 backdrop-blur-sm transition-opacity">
+        <div class="bg-white text-gray-900 rounded-3xl p-6 sm:p-8 w-full max-w-sm text-center shadow-2xl transform transition-transform scale-95" id="modal-content">
+            <div id="modal-icon" class="text-5xl mb-4">👑</div>
+            <h2 id="modal-title" class="text-2xl font-game font-bold mb-3 text-blue-900">Tiêu đề</h2>
+            <p id="modal-desc" class="mb-8 text-gray-600 text-lg">Nội dung thông báo</p>
+            <button id="modal-btn" class="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-transform transform hover:scale-105 w-full text-lg">
+                Đồng ý
+            </button>
+        </div>
+    </div>
+
+    <!-- Core Logic -->
     <script>
-        // Setup Canvas
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        const overlay = document.getElementById('ui-overlay');
-        const uiTitle = document.getElementById('ui-title');
-        const actionBtn = document.getElementById('action-btn');
+        // ---- Global State ----
+        let gameData = [];
+        let currentLevel = 0;
+        let score = 0;
+        let timeLeft = 30;
+        let timerInterval = null;
+        
+        // Structure for current word mechanics
+        let targetWordStr = "";
+        let structure = []; // Array representing slots (chars and spaces)
+        let availableTiles = []; // Shuffled letters
+        let placedTiles = []; // Array mapping slot index to tile object
+        
+        let synthCorrect = null;
+        let synthWrong = null;
+
+        const TIME_PER_QUESTION = 30; // Seconds
+
+        // ---- DOM Elements ----
+        const uiCreator = document.getElementById('creator-ui');
+        const viewWelcome = document.getElementById('welcome-view');
+        const viewSettings = document.getElementById('settings-view');
+        const uiGame = document.getElementById('game-ui');
+        const wordInput = document.getElementById('word-input');
+        
+        const slotsContainer = document.getElementById('slots-container');
+        const lettersContainer = document.getElementById('letters-container');
+        const levelDisplay = document.getElementById('level-display');
+        const totalLevelsDisplay = document.getElementById('total-levels');
         const scoreDisplay = document.getElementById('score-display');
-        const highScoreDisplay = document.getElementById('high-score-display');
+        const timerDisplay = document.getElementById('timer-display');
+        const btnExitTest = document.getElementById('btn-exit-test');
+        
+        const studentWelcomeView = document.getElementById('student-welcome-view');
+        const btnPlayGame = document.getElementById('btn-play-game');
 
-        // Định dạng kích thước Canvas cố định bên trong để tính toán vật lý dễ dàng
-        // Kích thước hiển thị thực tế sẽ được CSS scale tự động (aspect-ratio)
-        const CANVAS_WIDTH = 800;
-        const CANVAS_HEIGHT = 320;
-        canvas.width = CANVAS_WIDTH;
-        canvas.height = CANVAS_HEIGHT;
+        const modal = document.getElementById('custom-modal');
+        const modalContent = document.getElementById('modal-content');
+        const modalTitle = document.getElementById('modal-title');
+        const modalDesc = document.getElementById('modal-desc');
+        const modalIcon = document.getElementById('modal-icon');
+        const modalBtn = document.getElementById('modal-btn');
+        let modalCallback = null;
 
-        // Âm thanh sử dụng Web Audio API
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        let audioCtx;
-
+        // ---- Audio Initialization ----
         function initAudio() {
-            if (!audioCtx) {
-                audioCtx = new AudioContext();
+            if (!synthCorrect) {
+                synthCorrect = new Tone.PolySynth(Tone.Synth).toDestination();
+                synthCorrect.volume.value = -10;
+            }
+            if (!synthWrong) {
+                synthWrong = new Tone.Synth({
+                    oscillator: { type: 'square' },
+                    envelope: { attack: 0.01, decay: 0.2, sustain: 0, release: 0.1 }
+                }).toDestination();
+                synthWrong.volume.value = -10;
             }
         }
 
         function playSound(type) {
-            if (!audioCtx) return;
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-
-            if (type === 'jump') {
-                osc.type = 'square';
-                osc.frequency.setValueAtTime(400, audioCtx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(600, audioCtx.currentTime + 0.1);
-                gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-                osc.start(audioCtx.currentTime);
-                osc.stop(audioCtx.currentTime + 0.1);
-            } else if (type === 'die') {
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(200, audioCtx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(50, audioCtx.currentTime + 0.3);
-                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-                osc.start(audioCtx.currentTime);
-                osc.stop(audioCtx.currentTime + 0.3);
-            } else if (type === 'point') {
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(800, audioCtx.currentTime);
-                osc.frequency.setValueAtTime(1200, audioCtx.currentTime + 0.05);
-                gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-                osc.start(audioCtx.currentTime);
-                osc.stop(audioCtx.currentTime + 0.1);
+            if (!synthCorrect || !synthWrong || Tone.context.state !== 'running') return;
+            const now = Tone.now();
+            if (type === 'correct') {
+                synthCorrect.triggerAttackRelease(["C4", "E4", "G4", "C5"], "8n", now);
+            } else if (type === 'wrong') {
+                synthWrong.triggerAttackRelease("C2", "8n", now);
             }
         }
 
-        // Biến toàn cục trò chơi
-        let frames = 0;
-        let score = 0;
-        let highScore = localStorage.getItem('dinoHighScore') || 0;
-        let gameSpeed = 6;
-        let isPlaying = false;
-        let animationId;
-        let obstacles = [];
-        let particles = [];
-        let groundX = 0;
-        
-        // Định dạng chuỗi số 5 chữ số
-        const formatScore = (num) => num.toString().padStart(5, '0');
-        highScoreDisplay.innerText = `HI: ${formatScore(highScore)}`;
+        // ---- Initialization ----
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.APP_MODE === 'student') {
+                // We are in the exported file!
+                if(uiCreator) uiCreator.remove(); // Remove creator UI completely for cleaner DOM
+                
+                // Show Student Welcome View instead of immediate modal
+                studentWelcomeView.classList.remove('hidden');
+                studentWelcomeView.classList.add('flex');
 
-        // Lớp đối tượng Khủng Long
-        class Dino {
-            constructor() {
-                this.w = 44;
-                this.h = 48;
-                this.x = 50;
-                this.baseY = CANVAS_HEIGHT - 40 - this.h;
-                this.y = this.baseY;
-                this.vy = 0;
-                this.gravity = 0.65;
-                this.jumpPower = -12.5;
-                this.isGrounded = true;
-                this.legOffset = 0; // Để tạo hiệu ứng chạy
-            }
-
-            jump() {
-                if (this.isGrounded) {
-                    this.vy = this.jumpPower;
-                    this.isGrounded = false;
-                    playSound('jump');
-                    createDust(this.x + this.w / 2, this.y + this.h);
+                // Handle Play Game button click
+                btnPlayGame.addEventListener('click', async () => {
+                    await Tone.start();
+                    initAudio();
+                    
+                    // Hide welcome screen and show game
+                    studentWelcomeView.classList.add('hidden');
+                    studentWelcomeView.classList.remove('flex');
+                    uiGame.classList.remove('hidden');
+                    
+                    if (window.INJECTED_WORDS && window.INJECTED_WORDS.length > 0) {
+                        startGame(window.INJECTED_WORDS);
+                    } else {
+                        showModal('Lỗi', 'Không tìm thấy dữ liệu trò chơi!', '❌');
+                    }
+                });
+            } else {
+                // We are in Creator mode
+                // Put some default sample data if empty
+                if(wordInput.value.trim() === '') {
+                    wordInput.value = "CHÂN THÀNH\nTHẤU HIỂU\nĐỒNG CẢM\nGẮN BÓ\nSẺ CHIA";
                 }
             }
+        });
 
-            update() {
-                this.vy += this.gravity;
-                this.y += this.vy;
-
-                // Kiểm tra va chạm với mặt đất
-                if (this.y >= this.baseY) {
-                    this.y = this.baseY;
-                    this.vy = 0;
-                    this.isGrounded = true;
-                }
-
-                // Hiệu ứng chạy (thay đổi chân)
-                if (this.isGrounded && frames % 10 === 0) {
-                    this.legOffset = this.legOffset === 0 ? 1 : 0;
-                } else if (!this.isGrounded) {
-                    this.legOffset = 0; // Kéo chân lên khi nhảy
-                }
-            }
-
-            draw() {
-                ctx.fillStyle = '#334155'; // Màu xám đen
-                
-                // Thân (vẽ kiểu hình hộp)
-                ctx.fillRect(this.x, this.y, this.w - 10, this.h - 10);
-                
-                // Đầu & Mõm
-                ctx.fillRect(this.x + 15, this.y - 10, 25, 20);
-                
-                // Mắt
-                ctx.fillStyle = 'white';
-                ctx.fillRect(this.x + 25, this.y - 6, 4, 4);
-                
-                // Cánh tay nhỏ
-                ctx.fillStyle = '#334155';
-                ctx.fillRect(this.x + 30, this.y + 15, 10, 4);
-                
-                // Chân trái
-                if (this.legOffset === 0 || !this.isGrounded) {
-                    ctx.fillRect(this.x + 5, this.y + this.h - 10, 8, 10);
-                } else {
-                    ctx.fillRect(this.x + 5, this.y + this.h - 10, 8, 5); // Chân co
-                }
-                
-                // Chân phải
-                if (this.legOffset === 1 || !this.isGrounded) {
-                    ctx.fillRect(this.x + 20, this.y + this.h - 10, 8, 10);
-                } else {
-                    ctx.fillRect(this.x + 20, this.y + this.h - 10, 8, 5); // Chân co
-                }
-            }
-        }
-
-        // Lớp đối tượng Chướng ngại vật (Cây xương rồng / Gai)
-        class Obstacle {
-            constructor() {
-                // Kích thước ngẫu nhiên: Xương rồng nhỏ hoặc lớn
-                const type = Math.random();
-                if (type > 0.6) {
-                    // Xương rồng to
-                    this.w = 30 + Math.random() * 20;
-                    this.h = 45 + Math.random() * 25;
-                } else if (type > 0.3) {
-                    // Cụm xương rồng nhỏ
-                    this.w = 50 + Math.random() * 20;
-                    this.h = 35 + Math.random() * 10;
-                } else {
-                    // Cây xương rồng mảnh cao
-                    this.w = 20;
-                    this.h = 60 + Math.random() * 15;
-                }
-                
-                this.x = CANVAS_WIDTH;
-                this.y = CANVAS_HEIGHT - 40 - this.h;
-                this.markedForDeletion = false;
-            }
-
-            update() {
-                this.x -= gameSpeed;
-                if (this.x + this.w < 0) {
-                    this.markedForDeletion = true;
-                }
-            }
-
-            draw() {
-                // Vẽ xương rồng màu xanh lá
-                ctx.fillStyle = '#16a34a'; 
-                
-                // Trục chính
-                ctx.fillRect(this.x, this.y, this.w, this.h);
-                
-                // Thêm chi tiết cho giống xương rồng
-                ctx.fillStyle = '#15803d'; // Màu tối hơn để làm bóng
-                ctx.fillRect(this.x + this.w - 5, this.y, 5, this.h);
-                
-                // Gai xương rồng (các chấm nhỏ)
-                ctx.fillStyle = '#bbf7d0';
-                for(let i=0; i<3; i++){
-                    ctx.fillRect(this.x + 5, this.y + 10 + (i*15), 2, 2);
-                    ctx.fillRect(this.x + this.w - 8, this.y + 5 + (i*15), 2, 2);
-                }
-            }
-        }
-
-        // Lớp hạt bụi khi nhảy (Hiệu ứng)
-        class Particle {
-            constructor(x, y) {
-                this.x = x;
-                this.y = y;
-                this.size = Math.random() * 4 + 2;
-                this.speedX = Math.random() * -2 - 1;
-                this.speedY = Math.random() * -2;
-                this.life = 1.0;
-            }
-            update() {
-                this.x += this.speedX;
-                this.y += this.speedY;
-                this.life -= 0.05;
-            }
-            draw() {
-                ctx.fillStyle = `rgba(156, 163, 175, ${this.life})`;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fill();
-            }
-        }
-
-        function createDust(x, y) {
-            for(let i = 0; i < 5; i++) {
-                particles.push(new Particle(x, y));
-            }
-        }
-
-        let dino = new Dino();
-
-        function drawGround() {
-            groundX -= gameSpeed;
-            if (groundX <= -CANVAS_WIDTH) groundX = 0;
-
-            // Bãi cỏ xanh mướt
-            ctx.fillStyle = '#bbf7d0'; // Xanh lá nhạt cho toàn bộ mặt đất
-            ctx.fillRect(0, CANVAS_HEIGHT - 40, CANVAS_WIDTH, 40);
+        // ---- Utility: Custom Modal ----
+        function showModal(title, desc, icon, buttonText = 'Tiếp tục', callback = null) {
+            modalTitle.textContent = title;
+            modalDesc.innerHTML = desc;
+            modalIcon.textContent = icon;
+            modalBtn.textContent = buttonText;
+            modalCallback = callback;
             
-            // Đường viền của mặt cỏ
-            ctx.fillStyle = '#22c55e'; // Xanh lá đậm
-            ctx.fillRect(0, CANVAS_HEIGHT - 40, CANVAS_WIDTH, 4);
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modalContent.classList.remove('scale-95');
+                modalContent.classList.add('scale-100');
+            }, 10);
+        }
+
+        modalBtn.addEventListener('click', () => {
+            modalContent.classList.remove('scale-100');
+            modalContent.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                if (modalCallback) modalCallback();
+            }, 200);
+        });
+
+        // ---- Creator Functions ----
+        function showSettings() {
+            viewWelcome.classList.add('hidden');
+            viewSettings.classList.remove('hidden');
+            viewSettings.classList.add('flex');
+        }
+
+        function hideSettings() {
+            viewSettings.classList.add('hidden');
+            viewSettings.classList.remove('flex');
+            viewWelcome.classList.remove('hidden');
+        }
+
+        function parseInputData() {
+            const raw = wordInput.value.trim();
+            if (!raw) return [];
             
-            // Vẽ các bụi cỏ nhỏ trôi
-            ctx.fillStyle = '#16a34a';
-            for(let i = 0; i < 20; i++) {
-                const px = ((groundX + i * 85) % CANVAS_WIDTH + CANVAS_WIDTH) % CANVAS_WIDTH;
-                // Mỗi bụi cỏ có 2-3 nhánh cỏ nhỏ nhô lên
-                ctx.fillRect(px, CANVAS_HEIGHT - 35 + (i%3)*10, 2, i%2 === 0 ? 6 : 4);
-                ctx.fillRect(px + 3, CANVAS_HEIGHT - 34 + (i%3)*10, 2, i%2 === 0 ? 4 : 7);
-                if (i%3 === 0) {
-                    ctx.fillRect(px + 6, CANVAS_HEIGHT - 33 + (i%3)*10, 2, 5);
+            const lines = raw.split('\n');
+            const data = [];
+            
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+                
+                const word = line.toUpperCase();
+                const cleanWord = word.replace(/\s+/g, ' '); 
+                if (cleanWord) {
+                    data.push({ word: cleanWord });
                 }
+            }
+            return data;
+        }
+
+        async function startTestMode() {
+            const parsedData = parseInputData();
+            if (parsedData.length === 0) {
+                showModal('Lỗi Nhập Liệu', 'Vui lòng nhập ít nhất 1 từ vựng.', '⚠️', 'Đã hiểu');
+                return;
+            }
+            
+            await Tone.start();
+            initAudio();
+
+            uiCreator.classList.add('hidden');
+            uiGame.classList.remove('hidden');
+            btnExitTest.classList.remove('hidden'); // Show exit button in test mode
+            
+            startGame(parsedData);
+        }
+
+        function exitTestMode() {
+            stopTimer();
+            uiGame.classList.add('hidden');
+            uiCreator.classList.remove('hidden');
+            showSettings(); // Ensure settings view is visible when returning
+        }
+
+        function exportHTML() {
+            const parsedData = parseInputData();
+            if (parsedData.length === 0) {
+                showModal('Lỗi Nhập Liệu', 'Vui lòng nhập dữ liệu trước khi xuất Game.', '⚠️', 'Đã hiểu');
+                return;
+            }
+
+            // Clone the current document
+            const htmlClone = document.documentElement.cloneNode(true);
+            
+            // Remove creator UI from clone to prevent students from seeing/editing it
+            const clonedCreatorUI = htmlClone.querySelector('#creator-ui');
+            if (clonedCreatorUI) clonedCreatorUI.remove();
+
+            // Inject the configuration script into the <head> of the clone
+            const configScript = document.createElement('script');
+            configScript.textContent = `
+                // Injected Game Data
+                window.APP_MODE = 'student';
+                window.INJECTED_WORDS = ${JSON.stringify(parsedData)};
+            `;
+            htmlClone.querySelector('head').prepend(configScript);
+
+            // Assemble final HTML string
+            const finalHTML = "<!DOCTYPE html>\n" + htmlClone.outerHTML;
+
+            // Trigger Download
+            const blob = new Blob([finalHTML], { type: 'text/html;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'VuaTiengViet_Game.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            showModal('Thành công!', 'File Game HTML đã được tải xuống máy của bạn. Bạn có thể gửi file này cho học sinh để chơi ngay mà không cần cài đặt.', '🎉', 'Tuyệt vời');
+        }
+
+        // ---- Game Core Logic ----
+        function startGame(data) {
+            gameData = shuffleArray([...data]); // Shuffle the questions
+            currentLevel = 0;
+            score = 0;
+            totalLevelsDisplay.textContent = gameData.length;
+            updateScore();
+            
+            loadLevel();
+        }
+
+        function loadLevel() {
+            if (currentLevel >= gameData.length) {
+                endGame();
+                return;
+            }
+
+            const currentData = gameData[currentLevel];
+            targetWordStr = currentData.word;
+            levelDisplay.textContent = currentLevel + 1;
+            
+            // Parse target word into structure
+            structure = [];
+            let slotIndexCounter = 0;
+            const chars = targetWordStr.split('');
+            
+            let charactersToShuffle = [];
+
+            chars.forEach(char => {
+                if (char === ' ') {
+                    structure.push({ isSpace: true });
+                } else {
+                    structure.push({ 
+                        isSpace: false, 
+                        char: char, 
+                        slotIndex: slotIndexCounter 
+                    });
+                    charactersToShuffle.push(char);
+                    slotIndexCounter++;
+                }
+            });
+
+            // Prepare state tracking arrays
+            placedTiles = new Array(slotIndexCounter).fill(null);
+            
+            // Shuffle characters and create tile objects
+            charactersToShuffle = shuffleArray(charactersToShuffle);
+            availableTiles = charactersToShuffle.map((char, idx) => ({
+                id: `tile-${idx}`,
+                char: char,
+                used: false
+            }));
+
+            renderBoard();
+            startTimer();
+        }
+
+        function renderBoard() {
+            // Render Slots
+            slotsContainer.innerHTML = '';
+            
+            // Flex container wrapper to keep words grouped nicely
+            let currentWordDiv = document.createElement('div');
+            currentWordDiv.className = 'flex gap-1 sm:gap-2';
+            
+            structure.forEach((item) => {
+                if (item.isSpace) {
+                    slotsContainer.appendChild(currentWordDiv);
+                    
+                    const spaceIndicator = document.createElement('div');
+                    spaceIndicator.className = 'word-space';
+                    slotsContainer.appendChild(spaceIndicator);
+                    
+                    currentWordDiv = document.createElement('div');
+                    currentWordDiv.className = 'flex gap-1 sm:gap-2';
+                } else {
+                    const slot = document.createElement('div');
+                    const placedTileObj = placedTiles[item.slotIndex];
+                    
+                    slot.className = `letter-slot relative cursor-pointer ${placedTileObj ? 'filled' : ''}`;
+                    slot.dataset.index = item.slotIndex;
+                    
+                    if (placedTileObj) {
+                        // Render a tile inside the slot
+                        const tileInner = document.createElement('div');
+                        tileInner.className = 'letter-tile absolute animate-pop w-full h-full';
+                        tileInner.textContent = placedTileObj.char;
+                        slot.appendChild(tileInner);
+                        
+                        // Click to return tile to pool
+                        slot.onclick = () => returnTile(item.slotIndex);
+                    } else {
+                        // Empty slot
+                        slot.onclick = null;
+                    }
+                    
+                    currentWordDiv.appendChild(slot);
+                }
+            });
+            slotsContainer.appendChild(currentWordDiv);
+
+            // Render Available Tiles
+            lettersContainer.innerHTML = '';
+            availableTiles.forEach(tile => {
+                const btn = document.createElement('div');
+                btn.className = `letter-tile ${tile.used ? 'disabled' : ''}`;
+                btn.id = tile.id;
+                btn.textContent = tile.char;
+                
+                if (!tile.used) {
+                    btn.onclick = () => placeTile(tile.id);
+                }
+                
+                lettersContainer.appendChild(btn);
+            });
+        }
+
+        // ---- Interaction Logic ----
+        function placeTile(tileId) {
+            // Find first empty slot
+            const emptyIndex = placedTiles.findIndex(t => t === null);
+            if (emptyIndex === -1) return; // No empty slots
+
+            // Find tile
+            const tileIndex = availableTiles.findIndex(t => t.id === tileId);
+            if (tileIndex === -1 || availableTiles[tileIndex].used) return;
+
+            // Update state
+            availableTiles[tileIndex].used = true;
+            placedTiles[emptyIndex] = availableTiles[tileIndex];
+
+            renderBoard();
+            
+            // Check win condition right after rendering, but give UI time to update
+            setTimeout(() => {
+                checkAnswer();
+            }, 50);
+        }
+
+        function returnTile(slotIndex) {
+            const tileObj = placedTiles[slotIndex];
+            if (!tileObj) return;
+
+            // Mark tile as unused
+            const tileIndex = availableTiles.findIndex(t => t.id === tileObj.id);
+            if (tileIndex !== -1) {
+                availableTiles[tileIndex].used = false;
+            }
+
+            // Clear slot
+            placedTiles[slotIndex] = null;
+            
+            // Optional: Auto-shift remaining tiles left? No, let player manage gaps, or yes?
+            // Usually in these games, removing a letter just frees the slot.
+            // Let's implement gravity (shift left) for better UX.
+            shiftTilesLeft();
+            
+            renderBoard();
+        }
+
+        function shiftTilesLeft() {
+            // Filter out nulls
+            const currentPlaced = placedTiles.filter(t => t !== null);
+            // Rebuild placedTiles array with nulls at the end
+            placedTiles = new Array(placedTiles.length).fill(null);
+            currentPlaced.forEach((t, i) => placedTiles[i] = t);
+        }
+
+        function checkAnswer() {
+            // Check if all slots are filled
+            if (placedTiles.includes(null)) return;
+
+            // Construct string
+            let currentAnswerStr = "";
+            let placedIdx = 0;
+            
+            structure.forEach(item => {
+                if (item.isSpace) {
+                    currentAnswerStr += " ";
+                } else {
+                    currentAnswerStr += placedTiles[placedIdx].char;
+                    placedIdx++;
+                }
+            });
+
+            if (currentAnswerStr === targetWordStr) {
+                // Correct!
+                stopTimer();
+                playSound('correct');
+                score += 10 + Math.floor(timeLeft / 2); // Bonus points for time
+                updateScore();
+                
+                // Visual effect
+                slotsContainer.classList.add('animate-success');
+                
+                setTimeout(() => {
+                    slotsContainer.classList.remove('animate-success');
+                    showModal('Chính xác!', `Từ đúng là: <br><strong class="text-2xl text-green-600 mt-2 block">${targetWordStr}</strong><br>Bạn được cộng điểm!`, '🌟', 'Tiếp tục', () => {
+                        currentLevel++;
+                        loadLevel();
+                    });
+                }, 800);
+
+            } else {
+                // Wrong!
+                playSound('wrong');
+                slotsContainer.classList.add('animate-shake');
+                setTimeout(() => {
+                    slotsContainer.classList.remove('animate-shake');
+                }, 500);
             }
         }
 
-        function handleObstacles() {
-            // Tốc độ sinh chướng ngại vật phụ thuộc tốc độ game
-            const spawnRate = Math.max(50, 120 - Math.floor(gameSpeed * 5));
-            
-            if (frames % spawnRate === 0 && frames > 50) {
-                obstacles.push(new Obstacle());
-            }
-
-            for (let i = 0; i < obstacles.length; i++) {
-                obstacles[i].update();
-                obstacles[i].draw();
-
-                // Logic Phát hiện va chạm (AABB Collision Detection)
-                // Làm hộp va chạm của Dino nhỏ hơn một chút so với kích thước thật để tránh chết oan
-                const hitBoxX = dino.x + 5;
-                const hitBoxY = dino.y + 5;
-                const hitBoxW = dino.w - 15;
-                const hitBoxH = dino.h - 10;
-
-                if (
-                    hitBoxX < obstacles[i].x + obstacles[i].w - 5 &&
-                    hitBoxX + hitBoxW > obstacles[i].x + 5 &&
-                    hitBoxY < obstacles[i].y + obstacles[i].h &&
-                    hitBoxY + hitBoxH > obstacles[i].y + 5
-                ) {
-                    gameOver();
-                }
-            }
-
-            // Lọc bỏ chướng ngại vật đã ra khỏi màn hình
-            obstacles = obstacles.filter(obs => !obs.markedForDeletion);
+        function skipQuestion() {
+            stopTimer();
+            showModal('Bỏ qua', `Từ đúng là: <br><strong class="text-2xl text-blue-600 mt-2 block">${targetWordStr}</strong>`, 'ℹ️', 'Câu tiếp theo', () => {
+                currentLevel++;
+                loadLevel();
+            });
         }
 
-        function handleParticles() {
-            for (let i = 0; i < particles.length; i++) {
-                particles[i].update();
-                particles[i].draw();
+        function endGame() {
+            stopTimer();
+            let msg = `Bạn đã hoàn thành tất cả các câu hỏi!<br>Tổng điểm của bạn là: <strong class="text-3xl text-yellow-500 block mt-2">${score}</strong>`;
+            
+            showModal('Kết thúc Game!', msg, '🏆', 'Chơi lại', () => {
+                // Reset game if they click Chơi lại
+                startGame(gameData);
+            });
+        }
+
+        // ---- Timer & Utilities ----
+        function startTimer() {
+            stopTimer();
+            timeLeft = TIME_PER_QUESTION;
+            timerDisplay.textContent = timeLeft;
+            
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                timerDisplay.textContent = timeLeft;
+                
+                if (timeLeft <= 5) {
+                    timerDisplay.parentElement.classList.add('text-red-500', 'animate-pulse');
+                } else {
+                    timerDisplay.parentElement.classList.remove('text-red-500', 'animate-pulse');
+                }
+
+                if (timeLeft <= 0) {
+                    stopTimer();
+                    handleTimeOut();
+                }
+            }, 1000);
+        }
+
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
             }
-            particles = particles.filter(p => p.life > 0);
+            timerDisplay.parentElement.classList.remove('text-red-500', 'animate-pulse');
+        }
+
+        function handleTimeOut() {
+            showModal('Hết giờ!', `Từ đúng là: <br><strong class="text-2xl text-red-600 mt-2 block">${targetWordStr}</strong>`, '⏰', 'Câu tiếp theo', () => {
+                currentLevel++;
+                loadLevel();
+            });
         }
 
         function updateScore() {
-            // Tăng điểm
-            if (frames % 10 === 0) {
-                score++;
-                scoreDisplay.innerText = formatScore(score);
-                
-                // Hiệu ứng âm thanh khi đạt mỗi 100 điểm
-                if (score > 0 && score % 100 === 0) {
-                    playSound('point');
-                    // Hiệu ứng nhấp nháy chữ
-                    scoreDisplay.classList.add('text-green-600', 'font-bold');
-                    setTimeout(() => scoreDisplay.classList.remove('text-green-600', 'font-bold'), 300);
-                }
-            }
-
-            // Tăng tốc độ game từ từ (Tối đa = 15)
-            if (frames % 600 === 0 && gameSpeed < 15) {
-                gameSpeed += 0.5;
-            }
+            scoreDisplay.textContent = score;
         }
 
-        function gameOver() {
-            isPlaying = false;
-            cancelAnimationFrame(animationId);
-            playSound('die');
-            
-            if (score > highScore) {
-                highScore = score;
-                localStorage.setItem('dinoHighScore', highScore);
-                highScoreDisplay.innerText = `HI: ${formatScore(highScore)}`;
+        function shuffleArray(array) {
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex !== 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
             }
-
-            // Hiển thị Overlay
-            overlay.classList.remove('hidden');
-            uiTitle.innerHTML = `<span class="text-red-500">TRÒ CHƠI KẾT THÚC!</span><br><span class="text-sm mt-4 text-gray-600 block">Điểm: ${formatScore(score)}</span>`;
-            actionBtn.innerText = "CHƠI LẠI";
+            return array;
         }
 
-        function resetGame() {
-            initAudio();
-            dino = new Dino();
-            obstacles = [];
-            particles = [];
-            score = 0;
-            frames = 0;
-            gameSpeed = 6;
-            scoreDisplay.innerText = formatScore(score);
-            overlay.classList.add('hidden');
-            isPlaying = true;
-            animate();
-        }
-
-        // Vòng lặp chính của Game
-        function animate() {
-            if (!isPlaying) return;
-            
-            // Xóa canvas
-            ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-            
-            drawGround();
-            handleParticles();
-            dino.update();
-            dino.draw();
-            handleObstacles();
-            updateScore();
-            
-            frames++;
-            animationId = requestAnimationFrame(animate);
-        }
-
-        // Hàm xử lý nhảy
-        function triggerJump(e) {
-            // Ngăn chặn hành vi mặc định (ví dụ cuộn trang khi bấm Space hoặc chạm)
-            if(e) e.preventDefault();
-            
-            initAudio(); // Đảm bảo audio được kích hoạt trong tương tác đầu tiên của người dùng
-            
-            if (isPlaying) {
-                dino.jump();
-            } else if (overlay.classList.contains('hidden') === false) {
-                // Cho phép bấm Space để chơi lại ngay khi màn hình Game Over hiện
-                resetGame();
-            }
-        }
-
-        // Lắng nghe sự kiện
-        window.addEventListener('keydown', (e) => {
-            if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') {
-                triggerJump(e);
-            }
-        });
-
-        // Hỗ trợ cảm ứng trên điện thoại
-        canvas.addEventListener('touchstart', (e) => {
-            triggerJump(e);
-        });
-
-        // Bắt sự kiện click vào nút
-        actionBtn.addEventListener('click', (e) => {
-            triggerJump(e);
-        });
-
-        // Vẽ lần đầu tiên để người chơi thấy Khủng Long đang chờ
-        dino.draw();
-        
     </script>
-</body>
-</html>
+
+</body></html>
